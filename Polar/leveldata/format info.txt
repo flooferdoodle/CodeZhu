@@ -1,0 +1,48 @@
+FIRST LINE MUST BE SPAWN POSITION: (x) (y)
+EX...
+100 100
+
+LEVEL MATERIAL-----------------------------
+
+(Type: "t" for normal ground, "m" for magnet, "g" for goal, etc.)
+x1 and y1 MUST ALWAYS be less than x2 and y2 respectively
+	(ie x1 y1 must be the upper left corner)
+TERRAIN-------------------------------------
+t/terr (x1) (y1) (x2) (y2)
+
+EX...
+t 0 500 800 600
+Normal ground at (0,500) to (800,600)
+
+Always keep the terrain in multiples of 32 to make tiling easier
+
+MAGNETS-------------------------------------
+m/mag (type: "r"/"rect" for rectangular magnet fields, "c"/"circ" for circular magnet fields) (polarity) (lower strength bound) (upper strength bound) (x) (y) (strength)
+Strength bounds should be contained to (0,1) but theoretically might be able to go beyond
+
+m r ~ (magnet field size) (h/v) (string containing the active sides, "udrl" has all sides, "u"=top,"d"=down,"r"=right,"l"=left, order doesn't matter)
+
+m c ~ (radius)
+
+EX...
+m r n 0.2 0.5 400 0 800 100 10 400 d
+Rectangular magnet, north polarity, strength range of (0.2,0.5), position at (400,0) to (800,100), strength of 10, length of 400, only on bottom side
+
+m c s 0.1 0.8 350 300 450 400 15 200
+Circular magnet, south polarity, strength range of (0.1,0.8), position at (350,300) to (450,400), strength of 15, radius of 200
+
+I believe as a rule of thumb the repulsion should be stronger than attraction when trying to do stuff
+
+GOAL-------------------------------------
+g/goal (x) (y)
+x and y are the center, the goal is always 64x64
+
+EX...
+g 200 200
+Goal centered on (200,200)
+
+SAW--------------------------------------
+s/saw (x) (y) (r)
+x and y are center
+r is radius
+
