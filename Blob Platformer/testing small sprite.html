@@ -1,0 +1,1369 @@
+<html>
+<head>
+
+    <title>smaller sprite</title>
+
+    <style>
+        canvas{ border: 1px solid black; }
+
+        </style>
+
+    </head>
+
+    <body>
+
+    <div id="starter">
+      Arrow keys to move. Shift to run.
+
+    </div>
+
+
+
+        <canvas id="myCanvas"  ></canvas>
+
+
+        <script>
+        //sprite sizes 15x15
+        //export scaled
+        var blockWidth = 60;
+        var blockHeight = 60;
+        var canvas = document.getElementById("myCanvas");
+        var ctx = canvas.getContext("2d");
+        ctx.canvas.width  =blockWidth*16;
+        ctx.canvas.height = blockHeight*12;
+
+/*
+1 = grass ground
+2 = ground
+3 = lava
+4 = spring
+5 = door
+6 = spike
+7 = stone
+*/
+            /*var grid =
+            [[   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0],
+             [   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0],
+             [   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0],
+             [   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0],
+             [   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0],
+             [   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0],
+             [   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0],
+             [   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0],
+             [   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0],
+             [   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0],
+             [   1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1],
+             [   2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2]];
+*/
+            var levels = [];
+            var lvlCount = 0;
+
+            var lvl1 =
+            [[   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0],
+             [   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0],
+             [   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0],
+             [   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0],
+             [   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0],
+             [   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0],
+             [   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0],
+             [   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0],
+             [   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0],
+             [   0,  0,  0,  0,  0,  7,  6,  6,  6,  0,  0,  0,  0,  0,  5,  0],
+             [   1,  1,  1,  1,  1,  7,  7,  7,  7,  7,  1,  1,  1,  1,  1,  1],
+             [   2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2]];
+
+             levels.push(lvl1);
+
+             var lvl1half =
+             [[   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0],
+              [   0,  0,  0,  6,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0],
+              [   0,  0,  7,  7,  7,  7,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0],
+              [   0,  0,  0,  0,  0,  0,  7,  0,  0,  6,  0,  0,  6,  0,  0,  0],
+              [   0,  0,  0,  0,  0,  0,  5,  7,  7,  7,  7,  7,  7,  7,  0,  0],
+              [   7,  7,  7,  0,  0,  7,  7,  0,  0,  0,  0,  0,  0,  0,  0,  0],
+              [   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  7],
+              [   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  7,  7],
+              [   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  7,  7,  7],
+              [   0,  0,  0,  6,  0,  0,  6,  6,  0,  0,  0,  0,  7,  7,  7,  7],
+              [   1,  1,  1,  1,  1,  1,  1,  1,  1,  0,  0,  1,  1,  1,  1,  1],
+              [   2,  2,  2,  2,  2,  2,  2,  2,  2,  0,  0,  2,  2,  2,  2,  2]];
+
+              levels.push(lvl1half);
+
+             var lvl2 =
+             [[   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0],
+              [   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0],
+              [   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0],
+              [   5,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0],
+              [   7,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0],
+              [   0,  0,  0,  6,  0,  0,  0,  0,  0,  7,  0,  0,  0,  0,  0,  0],
+              [   0,  0,  0,  7,  7,  0,  0,  0,  0,  0,  0,  6,  0,  0,  0,  0],
+              [   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  7,  7,  0,  0,  0,  0],
+              [   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  7,  0],
+              [   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0],
+              [   1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1],
+              [   2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2]];
+
+              levels.push(lvl2);
+
+
+
+              var lvl3 =
+              [[   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0],
+               [   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0],
+               [   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0],
+               [   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0],
+               [   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  6,  0,  5,  0,  0],
+               [   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  7,  7,  7,  0,  0],
+               [   0,  7,  0,  0,  0,  0,  0,  7,  0,  0,  0,  0,  0,  0,  0,  0],
+               [   0,  7,  6,  6,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0],
+               [   0,  7,  7,  7,  7,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0],
+               [   6,  6,  6,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0],
+               [   1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1],
+               [   2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2]];
+
+
+               levels.push(lvl3);
+
+               var lvl4 =
+               [[   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0],
+                [   0,  0,  0,  0,  6,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0],
+                [   0,  0,  7,  7,  7,  7,  7,  7,  0,  0,  0,  0,  0,  0,  0,  0],
+                [   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0],
+                [   0,  0,  0,  5,  0,  0,  0,  0,  7,  0,  0,  0,  0,  0,  0,  0],
+                [   0,  6,  0,  7,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0],
+                [   0,  7,  7,  0,  0,  0,  0,  0,  0,  7,  6,  0,  0,  0,  0,  0],
+                [   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  7,  0,  0,  0,  0,  0],
+                [   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  7],
+                [   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0],
+                [   1,  1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  1,  1,  1],
+                [   2,  2,  0,  0,  0,  0,  0,  0,  0,  0,  0,  2,  2,  2,  2,  2]];
+
+
+                levels.push(lvl4);
+
+                var lvl5 =
+                [[   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0],
+                 [   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0],
+                 [   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0],
+                 [   5,  0,  6,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0],
+                 [   7,  7,  7,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0],
+                 [   0,  0,  0,  0,  7,  6,  0,  0,  0,  0,  0,  6,  0,  0,  0,  0],
+                 [   0,  0,  0,  0,  0,  7,  6,  0,  0,  6,  0,  7,  7,  0,  0,  0],
+                 [   0,  0,  0,  0,  0,  0,  7,  7,  7,  7,  0,  0,  0,  0,  0,  6],
+                 [   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  7,  7],
+                 [   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0],
+                 [   1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1],
+                 [   2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2]];
+
+                 levels.push(lvl5);
+
+                 var lvl6 =
+                 [[   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0],
+                  [   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0],
+                  [   0,  0,  0,  0,  0,  0,  0,  5,  0,  6,  0,  0,  0,  0,  0,  0],
+                  [   0,  0,  0,  0,  0,  0,  0,  7,  7,  7,  0,  0,  7,  7,  0,  0],
+                  [   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0],
+                  [   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  7],
+                  [   0,  0,  7,  0,  0,  0,  0,  0,  0,  0,  0,  0,  6,  0,  0,  0],
+                  [   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  7,  7,  0,  0],
+                  [   0,  1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0],
+                  [   0,  2,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  7],
+                  [   1,  2,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  6,  0],
+                  [   2,  2,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  7,  7,  0]];
+
+                  levels.push(lvl6);
+
+
+
+             var doorPos = [];
+             for(var i = 0;i<levels.length;i++){
+               for(var i_y = 0;i_y<levels[i].length;i_y++){
+                 for(var i_x = 0;i_x<levels[i][i_y].length;i_x++){
+                   if(levels[i][i_y][i_x]==5){
+                     var currDoor = [i_y,i_x];
+                     doorPos.push(currDoor);
+                   }
+                 }
+               }
+             }
+
+            //animation counters
+            var springAnimCount = 0;
+            var doorAnim = 0;
+            var lavaAnim = 0;
+            var hintAnim = 0;
+
+            //positioning for drawing
+            var blockX = 0;
+            var blockY = 0;
+
+            //collision blocks
+            var solid = [1,2,7];
+
+
+
+            /*var matrix = [];//192 cells //16 columns // 12 rows
+            var matrixSize = 192;
+            var sx = 0;
+            var sy = 0;
+
+
+            for (var i = 0; i<matrixSize; i++){
+                matrix.push({x: sx, y: sy})
+                sx+=40;
+                if(i%16==0){
+                    sy += 40;
+                    if(sy>=40*10){
+                        sx
+                    }
+                }
+
+            }*/
+
+            var pause = false;
+            var debug = false;
+
+            var playerX = 0;
+            var playerY = 400;
+            var playerXSpeed = 6;
+            var count = 1;
+
+            var lockAll = false;
+
+            var moveRight = false;
+            var moveLeft = false;
+            var sprintSpeed = 2;
+            var faceDir = 'r';
+            var sprint = false;
+            var lockX = false;
+            var lockY = false;
+
+            var jump = false;
+            var jumpAcc = false;
+            var yAcc = 0;
+            var playerYSpeed = 5;
+            var jumpCount = 0;
+            var jumpLimit = 2;
+            var grav = 1;
+            var jumpHeight = 12;
+            var springHeight = 26;
+            var groundLvl = blockHeight*9;
+
+            var crouch = false;
+            var crouchSpeed = 1/2;
+
+            var spriteSize = 45;
+
+
+            var spriteX = [18,82,146,210,274,338,402,466,530];
+            var spriteXw = 30;
+            var spriteY = 14;
+            var spriteYw = 30;
+            var spriteCount = 0;
+            var playerWidth = spriteSize;
+            var playerHeight = spriteSize;
+
+            var maxStam = 100;
+            var stam = 100;
+            var maxHealth = 100;
+            var health = 100;
+            var dead = false;
+            var currDeadAnim = 0;
+
+            var stun = false;
+            var stunLength = 10;
+            var currStun = 0;
+            //var dirStun = '';
+            //var stunHeight = 7;
+            var tempX = playerX;
+            var tempY = playerY;
+
+            var iFrames = 60;
+            var currI = 0;
+            var invincible = true;
+
+
+            var groundX = [18,82,146,210,274,338,402,466,530];
+            var groundXw = 30;
+            var groundY = 0;
+            var groundYw = 30;
+            var groundCount = 0;
+            var groundWidth = blockWidth+1;
+            var groundHeight = blockHeight+1;
+
+
+            var pTop = playerY;
+            var pBot = playerY+playerHeight;
+            var pRight = playerX+playerWidth;
+            var pLeft = playerX;
+            var pMidX = playerX + (playerWidth/2);
+            var pMidY = playerY + (playerHeight/2);
+
+            var fadeLength = 50;
+            var currFade = 0;
+            var spaceBarAnim = 0;
+
+            var victory = false;
+
+            //Player Image
+        var blobSpriteSheet = new Image();
+        var floorSpriteSheet = new Image();
+        var background = new Image();
+        floorSpriteSheet.src ='ground.png';
+        blobSpriteSheet.src = 'blobsprite.png';
+        background.src = 'background.jpg';
+
+        var smallBlob = new Image();
+        smallBlob.src = 'blobsprite smaller.png'
+
+        var staminaGauge = new Image();
+        staminaGauge.src = 'bar.png';
+        var healthBar = new Image();
+        healthBar.src = 'health.png';
+
+        var lvlCounter = new Image();
+        lvlCounter.src = 'level counter.png';
+
+        var wl = new Image();
+        //wl.src = 'winlose.png';
+        wl.src = 'text.png';
+
+        /*var doorSpriteSheet = new Image();
+        doorSpriteSheet.src = 'door.png';*/
+
+
+        var groundSprites = new Image();
+        groundSprites.src = 'tileSheet.png';
+
+        var dmgSprites = new Image();
+        dmgSprites.src = 'dmg.png';
+
+        var hints = new Image();
+        hints.src = 'hints.png';
+
+        background.onload = function(){
+        }
+        blobSpriteSheet.onload = function() {
+                        //context.drawImage(blobSpriteSheet, 69, 50);
+                          //context.drawImage(img,x,y,width,height);
+                          //context.drawImage(img,sx,sy,swidth,sheight,x,y,width,height);
+          //drawLevel();
+      };
+
+
+//vfx functions, WIP
+function idkWth(){
+    //idk wtf
+    ctx.drawImage(blobSpriteSheet,spriteX[spriteCount],spriteY/*[spriteCount]*/, spriteXw/*[spriteCount]*/, spriteYw/*[spriteCount]*/,playerX+50,playerY,playerWidth,playerHeight);
+    testGround();
+
+    ctx.drawImage(blobSpriteSheet,spriteX[spriteCount],spriteY/*[spriteCount]*/, spriteXw/*[spriteCount]*/, spriteYw/*[spriteCount]*/,playerX+100,playerY,playerWidth,playerHeight);
+    testGround();
+
+    ctx.drawImage(blobSpriteSheet,spriteX[spriteCount],spriteY/*[spriteCount]*/, spriteXw/*[spriteCount]*/, spriteYw/*[spriteCount]*/,playerX+150,playerY,playerWidth,playerHeight);
+    testGround();
+
+    ctx.drawImage(blobSpriteSheet,spriteX[spriteCount],spriteY/*[spriteCount]*/, spriteXw/*[spriteCount]*/, spriteYw/*[spriteCount]*/,playerX+200,playerY,playerWidth,playerHeight);
+    testGround();
+
+    ctx.drawImage(blobSpriteSheet,spriteX[spriteCount],spriteY/*[spriteCount]*/, spriteXw/*[spriteCount]*/, spriteYw/*[spriteCount]*/,playerX+250,playerY,playerWidth,playerHeight);
+    testGround();
+
+    ctx.drawImage(blobSpriteSheet,spriteX[spriteCount],spriteY/*[spriteCount]*/, spriteXw/*[spriteCount]*/, spriteYw/*[spriteCount]*/,playerX+300,playerY,playerWidth,playerHeight);
+    testGround();
+
+
+    ctx.drawImage(blobSpriteSheet,spriteX[spriteCount],spriteY/*[spriteCount]*/, spriteXw/*[spriteCount]*/, spriteYw/*[spriteCount]*/,playerX-50,playerY,playerWidth,playerHeight);
+    testGround();
+
+    ctx.drawImage(blobSpriteSheet,spriteX[spriteCount],spriteY/*[spriteCount]*/, spriteXw/*[spriteCount]*/, spriteYw/*[spriteCount]*/,playerX-100,playerY,playerWidth,playerHeight);
+    testGround();
+
+    ctx.drawImage(blobSpriteSheet,spriteX[spriteCount],spriteY/*[spriteCount]*/, spriteXw/*[spriteCount]*/, spriteYw/*[spriteCount]*/,playerX-150,playerY,playerWidth,playerHeight);
+    testGround();
+
+    ctx.drawImage(blobSpriteSheet,spriteX[spriteCount],spriteY/*[spriteCount]*/, spriteXw/*[spriteCount]*/, spriteYw/*[spriteCount]*/,playerX-200,playerY,playerWidth,playerHeight);
+    testGround();
+
+    ctx.drawImage(blobSpriteSheet,spriteX[spriteCount],spriteY/*[spriteCount]*/, spriteXw/*[spriteCount]*/, spriteYw/*[spriteCount]*/,playerX-250,playerY,playerWidth,playerHeight);
+    testGround();
+
+    ctx.drawImage(blobSpriteSheet,spriteX[spriteCount],spriteY/*[spriteCount]*/, spriteXw/*[spriteCount]*/, spriteYw/*[spriteCount]*/,playerX-300,playerY,playerWidth,playerHeight);
+    testGround();
+}
+function ghost(){
+
+}
+
+
+
+function checkSolid(num){
+  for(var i = 0;i<solid.length;i++){
+    if(num==solid[i]){
+      //console.log("solid");
+      return true;
+    }
+  }
+  return false;
+}
+
+
+function rightCollision(xpos,ypos,grid){
+  var flag = false;
+  if((checkSolid(grid[Math.ceil(ypos/blockHeight)][Math.ceil(xpos+playerWidth/blockWidth)]) && (pBot>Math.ceil(ypos/blockHeight)*blockHeight))
+   ||(checkSolid(grid[Math.floor(ypos/blockHeight)][Math.ceil(xpos+playerWidth/blockWidth)]) && (pTop>Math.floor(ypos/blockHeight)*blockHeight))
+  ){
+     flag = true;
+   }
+
+  if(flag) console.log("rightColl");
+  return flag;
+}
+
+function leftCollision(xpos,ypos,grid){
+  var flag = false;
+  if((checkSolid(grid[Math.ceil(ypos/blockHeight)][Math.floor(xpos/blockWidth)]) && (pBot>Math.ceil(ypos/blockHeight)*blockHeight))
+  ||  (checkSolid(grid[Math.floor(ypos/blockHeight)][Math.floor(xpos/blockWidth)]) && (pTop>Math.floor(ypos/blockHeight)*blockHeight)))
+  {
+    flag = true;
+  }
+
+  if(flag) console.log("leftColl");
+  return flag;
+}
+
+function botCollision(xpos,ypos,grid){
+  var flag = false;
+  if((checkSolid(grid[Math.floor(ypos/blockHeight)][Math.floor(xpos/blockWidth)]))
+    ||(checkSolid(grid[Math.floor(ypos/blockHeight)][Math.ceil(xpos/blockWidth)]))
+  ){
+    flag = true
+  }
+
+  if(flag) console.log("botColl");
+
+  return flag;
+  //return false;
+}
+
+function topCollision(xpos,ypos,grid){
+  var flag = false;
+  /*
+  if(ypos-1<=0){
+    return true;
+  }
+  */
+  if((checkSolid(grid[Math.ceil(ypos/blockHeight)][Math.floor(xpos/blockWidth)])
+  ||  checkSolid(grid[Math.ceil(ypos/blockHeight)][Math.ceil(xpos/blockWidth)]))
+  ){
+    flag = true;
+  }
+
+
+
+  //if(flag) console.log("topColl");
+  return flag;
+  //return false;
+}
+
+
+function spikeCollision(grid){
+  if((grid[Math.ceil(playerY/blockHeight)][Math.ceil(playerX/blockWidth)]==6)
+  || (grid[Math.floor(playerY/blockHeight)][Math.ceil(playerX/blockWidth)]==6)
+  || (grid[Math.ceil(playerY/blockHeight)][Math.floor(playerX/blockWidth)]==6)
+  || (grid[Math.floor(playerY/blockHeight)][Math.floor(playerX/blockWidth)]==6)
+  ){
+
+    if(pBot>Math.ceil(playerY/blockHeight)*blockHeight+(blockHeight/2)){
+      stun = true;
+      lockAll=true;
+      jumpCount = jumpLimit;
+      console.log("locked");
+      health-=20;
+
+    }
+  }
+}
+
+function endLevel(grid){
+  if((grid[Math.ceil(playerY/blockHeight)][Math.ceil(playerX/blockWidth)]==5)
+  || (grid[Math.floor(playerY/blockHeight)][Math.ceil(playerX/blockWidth)]==5)
+  || (grid[Math.ceil(playerY/blockHeight)][Math.floor(playerX/blockWidth)]==5)
+  || (grid[Math.floor(playerY/blockHeight)][Math.floor(playerX/blockWidth)]==5)
+  ){
+
+    var borderTop = (doorPos[lvlCount][0]*blockHeight)+(blockHeight/3);
+    var borderLeft= doorPos[lvlCount][1]*blockWidth;
+    var borderRight = doorPos[lvlCount][1]*blockWidth + blockWidth;
+    var borderLeftInner = (doorPos[lvlCount][1]*blockWidth)+(blockWidth/3);
+    var borderRightInner = (doorPos[lvlCount][1]*blockWidth)+(2*(blockWidth/3));
+
+    /*ctx.fillRect(0,borderTop,1000,1);
+    ctx.fillRect(borderLeft,0,1,1000);
+    ctx.fillRect(borderRight,0,1,1000);
+    ctx.fillRect(borderLeftInner,0,1,1000);
+    ctx.fillRect(borderRightInner,0,1,1000);*/
+
+    if(pBot>borderTop){
+      if((pRight>borderLeftInner && pRight<borderRight) ||
+          (pLeft<borderRightInner && pLeft>borderLeft)  ||
+          (playerX==borderLeft)){
+        if(lvlCount<levels.length-1){
+          lvlCount++;
+          reset();
+        }
+        else{
+          console.log("win");
+          win();
+        }
+      }
+    }
+  }
+}
+
+function win(){
+  lockAll = true;
+  victory = true;
+  pause = true;
+  stun = false;
+  jump = false;
+}
+
+
+function stunMove(dir){
+  jump = false;
+  playerX = tempX + Math.floor(((Math.random()*2)-1)*3);
+  playerY = tempY + Math.floor(((Math.random()*2)-1)*3);
+
+
+  if(count%2==0) stunAnim(dir);
+
+  if(currStun<stunLength){
+    currStun++;
+  }
+  else if(currStun>=stunLength){
+    stun = false;
+    lockAll = false;
+    currStun = 0;
+    invincible = true;
+    playerX = tempX;
+    playerY = tempY;
+    console.log("unlock");
+  }
+
+}
+
+//functional, not used
+function testGround(){
+
+    if(playerY>=groundLvl){
+        playerY = groundLvl;
+        lockY=true;
+        yAcc=0;
+        jumpCount=0;
+        if(jump==true && jumpAcc==false){
+            jump=false;
+
+        }
+    }
+
+}
+
+//working, subject to change
+function drawLevel(){
+    ctx.drawImage(background,0,0,canvas.width,canvas.height-2*blockHeight);
+    groundY=14;
+    blockX=0;
+    blockY=0;
+    /*if(groundCount>=4){
+        groundCount=0;
+    }
+    else if(count%3==0){
+        groundCount++;
+    }*/
+
+    if(count%5==0){
+      doorAnim++;
+      if(doorAnim>1) doorAnim -= 2;
+    }
+
+    if(count%3==0){
+      lavaAnim++;
+      if(lavaAnim>4) lavaAnim -= 5;
+    }
+
+
+
+    for(i=0;i<12;i++){
+        for(j=0;j<16;j++){
+            if(levels[lvlCount][i][j]==0){
+                //blockX += blockWidth;
+            }
+            else if(levels[lvlCount][i][j]==1){
+                /*groundY=14;
+                ctx.drawImage(floorSpriteSheet,groundX[0],groundY, groundXw, groundYw,blockX,blockY,groundWidth,groundHeight);*/
+                ctx.drawImage(groundSprites,(levels[lvlCount][i][j]-1)*blockWidth,0,blockWidth,blockHeight,blockX,blockY,groundWidth,groundHeight);
+                //blockX += blockWidth;
+            }
+            else if(levels[lvlCount][i][j]==2){
+                //groundY=14;
+                //ctx.drawImage(floorSpriteSheet,groundX[1],groundY, groundXw, groundYw,blockX,blockY,groundWidth,groundHeight);
+                ctx.drawImage(groundSprites,(levels[lvlCount][i][j]-1)*blockWidth,0,blockWidth,blockHeight,blockX,blockY,groundWidth,groundHeight);
+                //blockX += blockWidth;
+            }
+            else if (levels[lvlCount][i][j]==3){
+                //groundY=78;
+                //ctx.drawImage(floorSpriteSheet,doorAnim*30,0, groundXw, groundYw,blockX,blockY,groundWidth,groundHeight);
+                ctx.drawImage(groundSprites,lavaAnim*blockWidth,blockHeight,blockWidth,blockHeight,blockX,blockY,groundWidth,groundHeight);
+                //blockX += blockWidth;
+            }
+            else if(levels[lvlCount][i][j]==4){
+                /*groundY=14;
+                //for testing animation
+                if(springAnimCount>=2){
+                    springAnimCount=0;
+                }
+                else if(count%3==0){
+                    springAnimCount++;
+                }
+                ctx.drawImage(floorSpriteSheet,groundX[springAnimCount+2],groundY, groundXw, groundYw,blockX,blockY,groundWidth,groundHeight);*/
+                ctx.drawImage(groundSprites,(springAnimCount+2)*blockWidth,0,blockWidth,blockHeight,blockX,blockY,groundWidth,groundHeight);
+                //blockX += blockWidth;
+            }
+            else if(levels[lvlCount][i][j]==5){
+              //ctx.drawImage(doorSpriteSheet,doorAnim*60,0, 60, 60,blockX,blockY,groundWidth,groundHeight);
+              ctx.drawImage(groundSprites,doorAnim*blockWidth,2*blockHeight,blockWidth,blockHeight,blockX,blockY,groundWidth,groundHeight);
+              //blockX += blockWidth;
+            }
+            else if(levels[lvlCount][i][j]==6){
+              ctx.drawImage(groundSprites,2*blockWidth,2*blockHeight,blockWidth,blockHeight,blockX,blockY,groundWidth,groundHeight);
+
+            }
+            else if(levels[lvlCount][i][j]==7){
+              ctx.drawImage(groundSprites,3*blockWidth,2*blockHeight,blockWidth,blockHeight,blockX,blockY,groundWidth,groundHeight);
+            }
+            blockX += blockWidth;
+        }
+
+        blockX=0;
+        blockY+=blockWidth;
+    }
+}
+function drawFloor(){
+    spriteY=320;
+    spriteX=0;
+    for(i=0;i<12;i++){
+        //ctx.drawImage(floorSpriteSheet,spriteX[1],spriteY, spriteXw, spriteYw,blockX,blockY,playerWidth,playerHeight);
+        //ctx.drawImage(groundSprites,0,0,spriteSize,spriteSize,blockX,blockY)
+        blockX += blockWidth;
+    }
+}
+
+function calcSpeed(spd,sprintSpd/*,crouch*/){
+  var amount = spd;
+  if(sprint == true /*&& crouch==false*/){
+    amount *= sprintSpd;
+    stam--;
+  }
+  //else if(crouch==true && sprint == false) factor *= crouchSpeed;
+  return amount;
+}
+
+//lateral movement and idle
+function rightHandler(){
+  if(moveRight==true){
+    move = calcSpeed(playerXSpeed, sprintSpeed/*,crouchSpeed*/);
+    while(rightCollision(playerX+move,playerY,levels[lvlCount])){
+      move--;
+    }
+
+
+    if(playerX+move>canvas.width-playerWidth) move = canvas.width-playerWidth-playerX;
+    playerX += move;
+    rightAnim();
+
+  }
+}
+function leftHandler(){
+    if(moveLeft==true){
+      move = calcSpeed(playerXSpeed, sprintSpeed/*,crouchSpeed*/);
+      //else if(crouch==true && sprint == false) factor *= crouchSpeed;
+
+      while(leftCollision(playerX-move,playerY,levels[lvlCount])){
+        move--;
+      }
+      //console.log(move);
+      if(playerX-move<0) move = playerX;
+      playerX -= move;
+      leftAnim();
+
+    }
+}
+function idleHandler(){
+    if(moveLeft==false && moveRight==false && faceDir=='r'){
+        idleRightAnim();
+    }
+    else if(moveLeft==false && moveRight==false && faceDir=='l'){
+        idleLeftAnim();
+    }
+}
+
+
+//not working
+function springHandler(){
+    if(playerX>=200 && playerY)
+        if(faceDir=='r'){
+            rightAnim();
+        }
+        else if (faceDir=='l'){
+            leftAnim();
+        }
+        if(jumpAcc==true){
+            yAcc -= (yAcc+springHeight);
+            jumpAcc=false;
+        }
+
+}
+
+//jumps and grav
+function verticalHandler(){
+    gravCalc();
+    playerY=playerY+yAcc;
+    if(playerY<=0){
+      yAcc = 0;
+      while(playerY<=0){
+        playerY++;
+      }
+    }
+
+    if(playerY+spriteSize>canvas.height){
+      console.log("below");
+      playerX = 0;
+      playerY = 400;
+      invincible = true;
+      health -= 30;
+      return;
+    }
+
+
+
+    if (botCollision(playerX,playerY,levels[lvlCount])) {
+      yAcc=0;
+
+      /*
+      lockY=true;
+
+      jumpCount=0;
+      if(jump==true && jumpAcc==false){
+          jump=false;
+
+      }*/
+      while(botCollision(playerX,playerY,levels[lvlCount])){
+        playerY+=1;
+      }
+    }
+
+    if(topCollision(playerX,playerY,levels[lvlCount])){
+      //console.log("top");
+      playerY = Math.round(playerY);
+      if(yAcc!=0) yAcc = 0;
+      if(jump != false) jump = false;
+      if(jumpAcc != false) jumpAcc = false;
+      if(jumpCount != 0) jumpCount = 0;
+      while(topCollision(playerX,playerY,levels[lvlCount])){
+        playerY-=1;
+      }
+    }
+
+
+
+}
+
+function gravCalc(){
+    if(yAcc<=15){
+        yAcc+= grav;
+    }
+
+}
+
+function jumpHandler(){
+
+    if(faceDir=='r'){
+        rightAnim();
+    }
+    else if (faceDir=='l'){
+        leftAnim();
+    }
+
+    if(jumpAcc==true){
+        yAcc -= (yAcc+jumpHeight);
+        jumpAcc=false;
+    }
+
+}
+
+//nonfunctional, unused
+function jumpRightAnim(){
+    if(yAcc==0){
+        spriteCount=0;
+    }
+
+    if(lockX==true){
+
+    }
+    spriteY = 206;
+    /*for(i=0;i<3;i++){
+        spriteCount++;
+        ctx.drawImage(blobSpriteSheet,spriteX[spriteCount], spriteY, spriteXw, spriteYw, playerX, playerY, playerWidth, playerHeight);
+    }*/
+
+}
+function jumpLeftAnim(){
+    if(yAcc==0){
+        spriteCount=0;
+    }
+    spriteY = 270;
+    /*for(i=0;i<3;i++){
+        spriteCount++;
+        ctx.drawImage(blobSpriteSheet,spriteX[spriteCount], spriteY, spriteXw, spriteYw, playerX, playerY, playerWidth, playerHeight);
+    }*/
+}
+
+
+//animations
+function rightAnim(){
+    if(/*yAcc==0 && */jump==false){
+        spriteY = 1;
+
+        if(sprint==false){
+            if(count%2==0){
+                spriteCount++;
+            }
+        }
+        else if(sprint==true){
+            spriteCount++;
+        }
+
+        if(spriteCount >= 8){
+            spriteCount=0;
+        }
+    }
+
+    if(/*yAcc>0 || */jump==true){
+      spriteY = 3;
+        if(yAcc<0){
+            spriteCount = 4;
+        }
+        else if(yAcc>0){
+            spriteCount = 5;
+        }
+    }
+
+    /*if(crouch==true){
+        spriteY=334;
+        if(count%2==0){
+            spriteCount++;
+        }
+        if(spriteCount>=2){
+            spriteCount=0;
+        }
+    }*/
+}
+
+function leftAnim(){
+    if(/*yAcc==0 && */jump==false){
+        spriteY = 2;
+
+        if(sprint==false){
+            if(count%2==0){
+                spriteCount++;
+            }
+        }
+        else if(sprint==true){
+            spriteCount++;
+        }
+
+        if(spriteCount >= 8){
+            spriteCount=0;
+        }
+    }
+
+    if(/*yAcc>0 || */jump==true){
+      spriteY = 4;
+        if(yAcc<0){
+            spriteCount = 4;
+        }
+        else if(yAcc>0){
+            spriteCount = 5;
+        }
+
+    }
+
+    /*if(crouch==true){
+        spriteY=334;
+        if(count%2==0){
+            spriteCount++;
+        }
+        if(spriteCount<2||spriteCount>=4){
+            spriteCount=2;
+        }
+    }*/
+}
+
+function idleRightAnim(){
+    if(/*yAcc==0 && */jump==false){
+        //if(crouch==false){
+            spriteY = 0;
+
+            if(count%4==0){
+                spriteCount++;
+            }
+
+            if(spriteCount>=4){
+                spriteCount=0;
+            }
+        //}
+
+        else if(crouch == true){
+
+        }
+    }
+}
+
+function idleLeftAnim(){
+    if(/*yAcc==0 && */jump==false){
+        spriteY = 0;
+        if(spriteCount<5){
+            spriteCount = 5;
+        }
+
+        if(count%4==0){
+            spriteCount++;
+        }
+
+
+        if(spriteCount>=9){
+            spriteCount = 5;
+        }
+    }
+}
+
+function invAnim(){
+  if(currI<iFrames) currI++;
+  else if(currI>=iFrames){
+    invincible=false;
+    currI = 0;
+  }
+
+  if(currI<iFrames-15 && currI%8==0){
+    spriteCount=4;
+    spriteY=0;
+  }
+  else if(currI>=iFrames-15 && currI%4==0){
+    spriteCount=4;
+    spriteY=0;
+  }
+}
+
+function stunAnim(side){
+  spriteY = 5;
+  var changeAnim = 0;
+  if(currStun%3==0) changeAnim = 1;
+  if(side == 'r'){
+    spriteCount = 3 + changeAnim;
+
+  }
+  else if(side == 'l'){
+    spriteCount = 0 + changeAnim;
+  }
+  //console.log(currStun);
+}
+
+function checkHealth(){
+  if(health<=0){
+    health = 0;
+    dead = true;
+    lockAll = true;
+    stun = false;
+    jump = false;
+  }
+}
+
+function deadAnim(){
+  if(faceDir=='r'){
+    spriteY = 6;
+  }
+  else if(faceDir=='l'){
+    spriteY = 7;
+  }
+
+  if(currDeadAnim<10 && count%2==0){
+    spriteCount = currDeadAnim;
+    currDeadAnim++;
+  }
+
+  else if(currDeadAnim>=10){
+    /*
+    reset();
+    dead = false;
+    health = maxHealth;
+
+    currDeadAnim = 0;
+
+    invincible = true;
+
+    lvlCount = 0;
+    */
+    pause = true;
+  }
+}
+
+function reset(){
+  jump = false;
+  jumpAcc = false;
+  yAcc = 0;
+  faceDir = 'r';
+  lockAll = false;
+  lockX = false;
+  lockY = false;
+  playerX = 0;
+  playerY = 400;
+  invincible = true;
+  stam = maxStam;
+}
+
+function fade(){
+  ctx.globalAlpha = currFade/(fadeLength*2);
+
+  ctx.fillStyle = "#000000";
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+
+  ctx.globalAlpha = currFade/fadeLength;
+    //console.log(currFade + " / " + fadeLength + " = " + ctx.globalAlpha);
+  if(dead){
+    spriteX=0;
+    spriteY = 1;
+    ctx.drawImage(wl,spriteX*blockWidth, spriteY*blockHeight, 3*blockWidth,blockHeight,(canvas.width/2)-(3*blockWidth/2),(canvas.height/2)-(blockHeight), 3*blockWidth,blockHeight);
+
+
+  }
+
+  else if(victory){
+    spriteX = 0;
+    spriteY = 0;
+    ctx.drawImage(wl,spriteX*blockWidth, spriteY*blockHeight, 3*blockWidth,blockHeight,(canvas.width/2)-(3*blockWidth/2),(canvas.height/2)-(blockHeight), 3*blockWidth,blockHeight);
+  }
+
+  spriteY = 2;
+  if(count%7==0){
+    //console.log(spaceBarAnim);
+    if(spaceBarAnim == 0) spaceBarAnim = 1;
+    else if(spaceBarAnim == 1) spaceBarAnim = 0;
+  }
+  ctx.drawImage(wl,spaceBarAnim*3*blockWidth, spriteY*blockHeight, 3*blockWidth,blockHeight,(canvas.width/2)-(3*blockWidth/2),(canvas.height/2)+(blockHeight), 3*blockWidth,blockHeight);
+
+  if(currFade<fadeLength)currFade++;
+  ctx.globalaAlpha = 1;
+
+}
+
+function drawHints(){
+  //ctx.drawImage(hints, 0, 0)
+  if(count%10==0){
+    if(hintAnim ==1) hintAnim = 0;
+    else if(hintAnim == 0) hintAnim = 1;
+  }
+  ctx.drawImage(hints,hintAnim*45*4,0,45*4,20*4,(canvas.width/2)-(45*5),canvas.height*(5/8)-(45*4/2),45*4,20*4);
+  ctx.drawImage(hints,hintAnim*45*4,20*4,45*4,20*4,(canvas.width/2),canvas.height*(5/8)-(45*4/2),45*4,20*4);
+
+  ctx.drawImage(hints,0,2*20*4,45*4,20*4,60*4.5,-8,45*4,20*4);
+  ctx.drawImage(hints,45*4,2*20*4,45*4,20*4,60*4.5,42,45*4,20*4);
+}
+
+function drawSprite(){
+
+    if(dead){
+      deadAnim();
+      /*ctx.globalAlpha = currDeadAnim/15;
+      ctx.fillRect(0,0,canvas.width,canvas.height);
+      ctx.globalAlpha = 1;*/
+      ctx.drawImage(smallBlob,spriteSize*spriteCount,spriteY*spriteSize, spriteSize, spriteSize, playerX, playerY, playerWidth, playerHeight);
+      return;
+    }
+    //testGround();
+
+    //idkWth();
+
+    if(stun == true){
+      stunMove(faceDir);
+    }
+
+
+
+    if(jump==true && jumpCount<=jumpLimit){
+        jumpHandler();
+    }
+
+    if(lockX==false && lockAll==false){
+
+
+        rightHandler();
+
+        leftHandler();
+
+        idleHandler();
+
+    }
+
+    if(lockY==false && lockAll==false && !topCollision(playerX,playerY, levels[lvlCount])){
+        verticalHandler();
+    }
+
+    if(!stun && !invincible){
+      spikeCollision(levels[lvlCount]);
+    }
+
+    if(invincible){
+      invAnim();
+    }
+
+    checkHealth();
+    endLevel(levels[lvlCount]);
+    //testGround();
+    //ctx.fillRect(playerX, playerY, playerHeight, playerWidth);
+    //ctx.drawImage(blobSpriteSheet,spriteX[spriteCount],spriteY, spriteXw, spriteYw, playerX, playerY, playerWidth, playerHeight);
+    //console.log(spriteCount + " " + spriteY);
+    ctx.drawImage(smallBlob,spriteSize*spriteCount,spriteY*spriteSize, spriteSize, spriteSize, playerX, playerY, playerWidth, playerHeight);
+}
+
+function draw() {
+  //if(pause) return;
+    //count++;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(background,0,0,canvas.width,canvas.height);
+
+
+
+    //drawFloor();
+    drawLevel();
+
+    //healthBar
+    ctx.fillStyle = "#e20000";
+    ctx.fillRect(83,20,167*(health/maxHealth),15);
+    ctx.drawImage(healthBar, 10,5);
+
+    //gauge
+    if(sprint==false && stam<maxStam) stam+= 0.3;
+    if(stam<=0) sprint=false;
+    ctx.fillStyle = "#03d800";
+    ctx.fillRect(83,73,167*(stam/maxStam),15);
+    ctx.drawImage(staminaGauge, 10,55);
+
+    //level counter
+    ctx.drawImage(lvlCounter,0,lvlCount*blockHeight,3*blockWidth,blockHeight, 13.5*blockWidth,0.25*blockHeight,3*blockWidth,blockHeight);
+
+    ctx.fillStyle = "#000000";
+
+
+    if(debug){
+
+      //grid
+      ctx.globalAlpha = 0.2;
+      for(var i = 0;i<12;i++){
+        ctx.fillRect(0, i*blockHeight, canvas.width, 1);
+      }
+      for(var i = 0;i<16;i++){
+        ctx.fillRect(i*blockWidth, 0, 1, canvas.height);
+      }
+
+      ctx.globalAlpha = 1;
+    }
+
+    //hitbox
+    drawSprite();
+    pTop = playerY;
+    pBot = playerY+playerHeight;
+    pRight = playerX+playerWidth;
+    pLeft = playerX;
+    pMidX = playerX + (playerWidth/2);
+    pMidY = playerY + (playerHeight/2);
+    if(!stun){
+      tempX = playerX;
+      tempY = playerY;
+    }
+
+    if(debug){
+      //horizontal hitbox
+      ctx.fillRect(0, pTop, canvas.width, 1);
+      ctx.fillRect(0, pBot, canvas.width, 1);
+      //for()
+
+      //vertical hitbox
+      ctx.fillRect(pRight, 0, 1, canvas.height);
+      ctx.fillRect(pLeft, 0, 1, canvas.height);
+
+      ctx.globalAlpha = 0.5;
+      //player positions
+      ctx.fillRect(pLeft, playerY+(spriteSize/2), 5, 5);
+      ctx.fillRect(pRight, playerY+(spriteSize/2), 5, 5);
+      ctx.fillRect(playerX+(spriteSize/2), pTop, 5, 5);
+      ctx.fillRect(playerX+(spriteSize/2), pBot, 5, 5);
+      ctx.fillRect(pMidX, pMidY, 5, 5);
+
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = "#ff0000";
+      //current grid position of character
+      ctx.fillRect(Math.floor(playerX/blockWidth)*blockWidth,Math.floor(playerY/blockHeight)*blockHeight,60,1);
+      ctx.fillRect(Math.floor(playerX/blockWidth)*blockWidth,Math.floor(playerY/blockHeight)*blockHeight,1,60);
+      ctx.fillRect(Math.floor(playerX/blockWidth)*blockWidth,Math.floor(playerY/blockHeight)*blockHeight+60,60,1);
+      ctx.fillRect(Math.floor(playerX/blockWidth)*blockWidth+60,Math.floor(playerY/blockHeight)*blockHeight,1,60);
+
+      ctx.fillStyle = "#000000";
+      //output of playerX and playerY
+      ctx.font = "12px Arial";
+      ctx.fillText("x: "+playerX,playerX,playerY-50);
+      ctx.fillText("y: "+playerY,playerX,playerY-40);
+
+
+    }
+
+    if(lvlCount == 0){
+      drawHints();
+    }
+    //count=count%362880;
+
+    //console.log("----------------");
+}//end of method
+
+setInterval(function(){
+  count++;
+  count=count%362880;
+  if(!pause) draw();
+  else if(pause && (dead || victory)){
+    fade();
+  }
+}, 45);
+
+
+
+
+window.onload = function() {
+
+
+    document.addEventListener('mousedown', function(event) {
+
+
+       //console.log('mousedown');
+    }, false);
+
+
+      document.addEventListener('mousemove', function(event) {
+
+              var relativeX = event.clientX - canvas.offsetLeft;
+
+
+
+       //console.log('mousemove');
+    }, false);
+
+    document.addEventListener('keydown', function(event) {
+
+         //console.log('keydown' + event.keyCode);
+        if(event.keyCode==39){
+            moveRight=true;
+            faceDir='r';
+        }
+
+         if(event.keyCode==37){
+             moveLeft=true;
+             faceDir='l';
+        }
+
+        if(event.keyCode==16){
+          if(stam>0) sprint=true;
+        }
+
+        if(event.keyCode == 38){
+            //if(yAcc==0){
+          if(!botCollision(playerX,playerY-1,levels[lvlCount]) && !lockAll){
+                playerY-=grav+0.1;
+                lockY=false;
+                jump=true;
+            //    lockX=true;
+                jumpAcc=true;
+                jumpCount++;
+                //stam -= 30;
+
+            //}
+          }
+        }
+
+        if(event.keyCode == 40){
+            crouch=true;
+        }
+
+        if(event.keyCode == 32){
+          //pause = !pause;
+          if(dead || victory){
+            reset();
+            dead = false;
+            victory = false;
+            health = maxHealth;
+
+            currDeadAnim = 0;
+
+            invincible = true;
+
+            lvlCount = 0;
+            pause = false;
+            ctx.globalAlpha = 1;
+          }
+        }
+
+
+      //console.log("KeyCode: " + event.keyCode);
+
+
+    }, false);
+
+    document.addEventListener('keyup', function(event) {
+        /*moveLeft=false;
+        moveRight=false;
+        sprint=false;*/
+
+        if(event.keyCode==39){
+            moveRight=false;
+        }
+
+         if(event.keyCode==37){
+             moveLeft=false;
+        }
+
+        if(event.keyCode==16){
+            sprint=false;
+        }
+
+        if(event.keyCode == 40){
+            crouch=false;
+        }
+
+//        spriteCount=0;
+          //  console.log('keyuppb ' + event.keyCode);
+
+    }, false);
+
+    document.addEventListener("dblclick",function(event){
+      if(debug){
+        playerX = event.clientX;
+        playerY = event.clientY;
+      }
+
+    }, false);
+}
+
+
+        </script>
+    </body>
+
+</html>
