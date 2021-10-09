@@ -1,0 +1,255 @@
+<html>
+<head>
+  <meta charset="utf-8"></meta>
+  <link rel="shortcut icon" href="#">
+  <title>Turtle Server</title>
+  <!--<style>
+    canvas {
+        image-rendering: optimizeSpeed;             /* Older versions of FF          */
+        image-rendering: -moz-crisp-edges;          /* FF 6.0+                       */
+        image-rendering: -webkit-optimize-contrast; /* Safari                        */
+        image-rendering: -o-crisp-edges;            /* OS X & Windows Opera (12.02+) */
+        image-rendering: pixelated;                 /* Awesome future-browsers       */
+        -ms-interpolation-mode: nearest-neighbor;   /* IE                            */
+    }
+  </style>-->
+</head>
+<body>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <!--<script src="host.js"></script>-->
+  <script>
+    const colors = [
+      {"name":"white","rgb":[240,240,240],"code":"0"},
+      {"name":"orange","rgb":[242,178,51],"code":"1"},
+      {"name":"magenta","rgb":[229,127,216],"code":"2"},
+      {"name":"lightBlue","rgb":[153,178,242],"code":"3"},
+      {"name":"yellow","rgb":[222,222,108],"code":"4"},
+      {"name":"lime","rgb":[127,204,25],"code":"5"},
+      {"name":"pink","rgb":[242,178,204],"code":"6"},
+      {"name":"gray","rgb":[76,76,76],"code":"7"},
+      {"name":"lightGray","rgb":[153,153,153],"code":"8"},
+      {"name":"cyan","rgb":[76,153,178],"code":"9"},
+      {"name":"purple","rgb":[178,102,229],"code":"a"},
+      {"name":"blue","rgb":[51,102,204],"code":"b"},
+      {"name":"brown","rgb":[127,102,76],"code":"c"},
+      {"name":"green","rgb":[87,166,78],"code":"d"},
+      {"name":"red","rgb":[204,76,76],"code":"e"},
+      {"name":"black","rgb":[25,25,25],"code":"f"},
+    ];
+    window.onload = function(){
+      display = document.getElementById('imgDisplay');
+      scaledDisplay = document.getElementById('imgScaledDisplay');
+      scaledDisplay.getContext('2d').imageSmoothingEnabled = false;
+      coloredDisplay = document.getElementById('imgColoredDisplay');
+      coloredDisplay.getContext('2d').imageSmoothingEnabled = false;
+      //document.getElementById('imageUpload').addEventListener('input', loadImage);
+    };
+    (function retrieveDimensions() {
+      $.ajax({
+        url: '/dimensions',
+        success: function(data) {
+          console.log('DIMENSIONS: ' + data);
+          if(data == '-1') document.getElementById('dimensions').setAttribute('style', 'color:red');
+          else{
+            monitorDim = data;
+            document.getElementById('dimensions').setAttribute('style', 'color:green');
+            document.getElementById('dimensions').textContent = monitorDim[0] + "x" + monitorDim[1];
+            updateDisplay(display);
+            updateDisplay(scaledDisplay);
+            updateDisplay(coloredDisplay);
+          }
+        },
+        error: function(XMLHttpRequest, textStatus, errorThrown) {
+          document.getElementById('dimensions').setAttribute('style', 'color:red');
+        },
+        complete: function() {
+          // repeat function to update
+          setTimeout(retrieveDimensions, 5000);
+        }
+      });
+    })();
+
+    function sendData(){
+      $.post('/imageData', sendImage, function(res) {
+        alert("Image sent.");
+      });
+    }
+
+    function updateDisplay(canvas){
+      canvas.width = monitorDim[0] * 10;
+      canvas.height = monitorDim[1] * 10;
+    }
+
+    var display = document.getElementById('imgDisplay');
+    var scaledDisplay = document.getElementById('imgScaledDisplay');
+    var coloredDisplay = document.getElementById('imgColoredDisplay');
+    var canvas = document.createElement('canvas');
+    //document.body.appendChild(canvas);
+    var context = canvas.getContext('2d');
+
+
+
+    var monitorDim = [70,60];
+    function getImageData(img){
+      //console.log(img.width);
+      canvas.width = monitorDim[0];
+      canvas.height = monitorDim[1];
+      context.drawImage(img, 0, 0, monitorDim[0], monitorDim[1]);
+      return context.getImageData(0, 0, monitorDim[0], monitorDim[1]);
+    }
+
+    function drawFitImage(img, canvas){
+      let scale;
+      let ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      if(img.width / img.height > canvas.width / canvas.height){
+        //image width is greater than target width with respect to height
+        scale = canvas.height / img.height;
+      }
+      else{
+        //image height is greater than target height with respect to width
+        scale = canvas.width / img.width;
+      }
+
+      ctx.drawImage(img, 0, 0, img.width * scale, img.height * scale);
+
+    }
+    function drawFitImageData(imgData, canvas){
+      let tempCanvas = document.createElement('canvas');
+      tempCanvas.width = imgData.width;
+      tempCanvas.height = imgData.height;
+      tempCanvas.getContext('2d').putImageData(imgData, 0, 0);
+      let scale;
+      if(imgData.width / imgData.height > canvas.width / canvas.height){
+        //image width is greater than target width with respect to height
+        scale = canvas.height / imgData.height;
+      }
+      else{
+        //image height is greater than target height with respect to width
+        scale = canvas.width / imgData.width;
+      }
+      let ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.save();
+      ctx.scale(scale,scale);
+      ctx.drawImage(tempCanvas, 0, 0);
+      ctx.restore();
+    }
+
+    /*async function getImageFromURL(){
+      await new Promise((resolve, reject) => {
+        let img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = function(){
+          console.log("FAILED");
+          reject('rejected');
+        }
+        img.crossOrigin = 'Anonymous';
+        img.src = document.getElementById("imageLink").value;
+      }).then((img) => {
+
+        console.log(img.height);
+      }), (reason) => {
+        alert("Invalid image link.");
+        document.getElementById('imageLink').value = "";
+      }
+    }*/
+    var imageData;
+    var coloredImageData;
+    var sendImage = {
+      "width": "0",
+      "height": "0",
+      "stringData": ""
+    };
+    function loadImageFromURL(){
+      let link = document.getElementById("imageLink").value;
+      document.getElementById("imageLink").value = "";
+      var img = new Image();
+      img.onload = () => { processImage(img); };
+      img.onerror = () => {
+        alert("Invalid link.");
+        console.log("FAILED: " + link);
+      };
+      img.crossOrigin = 'Anonymous';
+      img.src = link;
+    }
+
+    function loadImage(file){
+      var input = file.target;
+
+      var reader = new FileReader();
+      reader.onload = function(){
+        var dataURL = reader.result;
+        let img = new Image;
+        img.onload = () => { processImage(img); };
+        img.onerror = () => {
+          alert("Invalid file.");
+          console.log(dataURL);
+        };
+        img.src = dataURL;
+      };
+      reader.readAsDataURL(input.files[0]);
+    }
+
+    function processImage(img){
+      drawFitImage(img, display);
+      imageData = getImageData(img);
+      drawFitImageData(imageData, scaledDisplay);
+      coloredImageData = new ImageData(imageData.data, imageData.width, imageData.height);
+      convertColors(coloredImageData);
+      drawFitImageData(coloredImageData, coloredDisplay);
+      console.log(sendImage);
+      sendData();
+    }
+    function convertColors(imgData){
+      sendImage.width = imgData.width;
+      sendImage.height = imgData.height;
+      sendImage.stringData = "";
+      for(var i = 0; i < imgData.data.length; i+=4){
+        let currColor = [imgData.data[i], imgData.data[i+1], imgData.data[i+2]];
+        let closeColor = getNearestColor(currColor);
+        imgData.data[i] = closeColor.rgb[0]; imgData.data[i+1] = closeColor.rgb[1]; imgData.data[i+2] = closeColor.rgb[2];
+        sendImage.stringData += closeColor.code;
+        if(i != 0 && (i/4+1)%imgData.width == 0){
+          sendImage.stringData += "\n";
+        }
+      }
+    }
+    const sqr = (num) => {return Math.pow(num, 2)};
+    function colorDist(c1, c2){
+      return Math.sqrt(sqr(c1[0]-c2[0]) + sqr(c1[1]-c2[1]) + sqr(c1[2]-c2[2]));
+    }
+    function getNearestColor(color){
+      let minDist = 500;
+      let minDist_i = -1;
+      for(var i = 0; i < colors.length; i++){
+        let dist = colorDist(color, colors[i].rgb);
+        if(dist < minDist){
+          minDist = dist;
+          minDist_i = i;
+        }
+      }
+      return colors[minDist_i];
+    }
+
+
+  </script>
+  <p>Monitor dimensions are: <span id="dimensions" style="color:red">15x10</span></p>
+  <h3>Image input</h3>
+  <input type="file" id="imageUpload" accept="image/*" multiple="false" onchange="loadImage(event)"></input>
+  <br>
+  <form action="#" hidden="true">
+    <input type="text" id="imageLink" placeholder="Paste image link"></input>
+    <button id="submitLink" onclick="loadImageFromURL()">Submit</button>
+  </form>
+
+  <canvas id="imgDisplay" width='300' height='300' style="border:1px solid #000000;"></canvas>
+  <br>
+  <canvas id="imgScaledDisplay" width='300' height='300' style="border:1px solid #000000;"></canvas>
+  <br>
+  <canvas id="imgColoredDisplay" width='300' height='300' style="border:1px solid #000000;"></canvas>
+
+
+</body>
+
+</html>
